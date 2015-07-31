@@ -11,7 +11,7 @@ Usage
 Compiling
 ---------
 
-`g++ urltail.cpp -lcurl -o urltail`
+`g++ -std=c++11 urltail.cpp -lcurl -o urltail`
 
 Requirements
 ------------

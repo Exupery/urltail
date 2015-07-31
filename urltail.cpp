@@ -5,7 +5,7 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 
-std::string read(const std::string url);
+std::string read(const std::string url, long startAt);
 int curlWrite(char* data, size_t size, size_t len, std::string* buffer);
 
 const int POLL_INTERVAL = 3;
@@ -20,21 +20,21 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  std::cout << "Tailing " << argv[1] << std::endl;
+  std::string url = argv[1];
+  std::cout << "Tailing " << url << std::endl;
 
   int noDiff = 0;
-  std::string previous = read(argv[1]);
-  std::cout << previous;
-  std::string current;
+  std::string buffer = read(url, 0);
+  std::cout << buffer << std::flush;
+
+  int pos = buffer.length();
 
   while (noDiff < MAX_NO_DIFF) {
     sleep(POLL_INTERVAL);
-    current = read(argv[1]);
-    int diffLength = current.length() - previous.length();
-    if (diffLength > 0) {
-      std::string diff = current.substr(previous.length() - 1, diffLength);
-      std::cout << diff << std::flush;
-      previous = current;
+    buffer = read(url, pos);
+    if (buffer.length() > 0) {
+      std::cout << buffer << std::flush;
+      pos += buffer.length();
     } else {
       noDiff++;
     }
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-std::string read(const std::string url) {
+std::string read(const std::string url, long startAt) {
   std::string buffer;
   CURL* curl = curl_easy_init();
 
@@ -54,6 +54,7 @@ std::string read(const std::string url) {
     curl_easy_setopt(curl, CURLOPT_HEADER, 0);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, &USER_AGENT);
 
+    curl_easy_setopt(curl, CURLOPT_RESUME_FROM, startAt);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWrite);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
 
@@ -63,6 +64,9 @@ std::string read(const std::string url) {
     std::cout << "ERROR: unable to initialize cURL" << std::endl;
   }
 
+  if (buffer.length() > 0) {
+    buffer.pop_back();
+  }
   return buffer;
 }
 
