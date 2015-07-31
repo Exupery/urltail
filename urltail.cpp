@@ -8,6 +8,8 @@
 std::string read(const std::string url);
 int curlWrite(char* data, size_t size, size_t len, std::string* buffer);
 
+const int POLL_INTERVAL = 3;
+const int MAX_NO_DIFF   = 20;
 const char USER_AGENT[] = "Mozilla/5.0 (compatible; urltail/0.1; +https://github.com/Exupery/urltail)";
 
 int main(int argc, char* argv[]) {
@@ -20,17 +22,25 @@ int main(int argc, char* argv[]) {
 
   std::cout << "Tailing " << argv[1] << std::endl;
 
+  int noDiff = 0;
   std::string previous = read(argv[1]);
-  std::cout << previous << std::endl;   // TODO DELME
-
+  std::cout << previous;
   std::string current;
 
-  while (true) {
+  while (noDiff < MAX_NO_DIFF) {
+    sleep(POLL_INTERVAL);
     current = read(argv[1]);
-    // TODO DIFF CURRENT VS PREVIOUS AND APPEND DIFF TO OUTPUT
-    std::cout << current << std::endl;  // TODO DELME
-    sleep(5);
+    int diffLength = current.length() - previous.length();
+    if (diffLength > 0) {
+      std::string diff = current.substr(previous.length() - 1, diffLength);
+      std::cout << diff << std::flush;
+      previous = current;
+    } else {
+      noDiff++;
+    }
   }
+
+  std::cout << "\nNo update for " << POLL_INTERVAL * MAX_NO_DIFF << " seconds. Exiting." << std::endl;
 
   return 0;
 }
