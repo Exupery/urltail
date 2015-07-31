@@ -1,7 +1,7 @@
 URL Tail
 =============
 
-Equivalent of running [tail -f](https://en.wikipedia.org/wiki/Tail_(Unix)) but for a URL (presumably containing periodically updating text) instead of a local file.
+Equivalent of running [tail -f](https://en.wikipedia.org/wiki/Tail_(Unix)) but for a URL (presumably containing a file with periodically updating text) instead of a local file.
 
 Usage
 -----
@@ -16,4 +16,4 @@ Compiling
 Requirements
 ------------
 
-* [cURL](http://curl.haxx.se/)
+* [libcurl](http://curl.haxx.se/libcurl/) - to install [libcurl4-gnutls-dev](http://packages.ubuntu.com/trusty/libcurl4-gnutls-dev) on Ubuntu run `sudo apt-get install libcurl4-gnutls-dev`
