@@ -1,10 +1,13 @@
 #include <iostream>
 #include <string.h>
 #include <unistd.h>
+#include <algorithm>
 
 #include <curl/curl.h>
 #include <curl/easy.h>
 
+bool invalidUrl(const std::string url);
+void tail(const std::string url);
 std::string read(const std::string url, long startAt);
 int curlWrite(char* data, size_t size, size_t len, std::string* buffer);
 
@@ -21,6 +24,26 @@ int main(int argc, char* argv[]) {
   }
 
   std::string url = argv[1];
+  if (invalidUrl(url)) {
+    std::cout << "ERROR: '" << url << "' is not a valid URL" << std::endl;
+    return 1;
+  }
+
+  tail(url);
+
+  return 0;
+}
+
+bool invalidUrl(const std::string url) {
+  if (url.size() < 10) {
+    return true;
+  }
+
+  // Not using std::regex for now as <regex> is unimplemented in gcc 4.8, see gcc bug 53631
+  return !(url.substr(0, 7) == "http://" || url.substr(0, 8) == "https://");
+}
+
+void tail(const std::string url) {
   std::cout << "Tailing " << url << std::endl;
 
   int noDiff = 0;
@@ -41,8 +64,6 @@ int main(int argc, char* argv[]) {
   }
 
   std::cout << "\nNo update for " << POLL_INTERVAL * MAX_NO_DIFF << " seconds. Exiting." << std::endl;
-
-  return 0;
 }
 
 std::string read(const std::string url, long startAt) {
